@@ -1,4 +1,4 @@
-# TETRIS 3D Game
+# TETRIS 3D Game Development
 
 A modern, premium 3D Tetris game built with React, Three.js, and TypeScript.
 
