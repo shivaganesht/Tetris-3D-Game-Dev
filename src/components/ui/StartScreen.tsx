@@ -5,7 +5,7 @@ export function StartScreen() {
   const gameState = useGameStore((state) => state.gameState);
   
   if (gameState !== 'idle') return null;
-  
+  //
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50">
       <div className="text-center space-y-8">
