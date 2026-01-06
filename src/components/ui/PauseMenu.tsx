@@ -4,6 +4,7 @@ export function PauseMenu() {
   const gameState = useGameStore((state) => state.gameState);
   const resumeGame = useGameStore((state) => state.resumeGame);
   const startGame = useGameStore((state) => state.startGame);
+  const goToMenu = useGameStore((state) => state.goToMenu);
   
   if (gameState !== 'paused') return null;
   
@@ -28,6 +29,14 @@ export function PauseMenu() {
                        hover:bg-gray-600 transition-all duration-200"
           >
             RESTART
+          </button>
+          
+          <button
+            onClick={goToMenu}
+            className="w-full px-6 py-3 bg-gray-800 border border-gray-600 rounded-lg font-bold
+                       hover:bg-gray-700 transition-all duration-200"
+          >
+            MAIN MENU
           </button>
         </div>
         

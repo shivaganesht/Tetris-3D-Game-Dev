@@ -29,6 +29,7 @@ interface GameStore {
   pauseGame: () => void;
   resumeGame: () => void;
   endGame: () => void;
+  goToMenu: () => void;
   moveLeft: () => void;
   moveRight: () => void;
   moveDown: () => boolean;
@@ -118,6 +119,24 @@ export const useGameStore = create<GameStore>()(
       if (get().gameState === 'paused') {
         set({ gameState: 'playing' });
       }
+    },
+
+    goToMenu: () => {
+      set({
+        gameState: 'idle',
+        grid: createEmptyGrid(),
+        activePiece: null,
+        nextPieces: [],
+        holdPiece: null,
+        canHold: true,
+        score: 0,
+        level: 1,
+        lines: 0,
+        combo: 0,
+        clearedRows: [],
+        isClearing: false,
+        bag: [],
+      });
     },
 
     endGame: () => {
