@@ -68,6 +68,7 @@ export async function logOut() {
 }
 
 // Leaderboard functions using Apps Script
+// Using no-cors mode and redirect:follow for Apps Script compatibility
 export async function saveHighScore(userId: string, displayName: string, score: number, level: number, lines: number) {
   try {
     const params = new URLSearchParams({
@@ -79,14 +80,29 @@ export async function saveHighScore(userId: string, displayName: string, score: 
       lines: lines.toString(),
     });
     
-    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`);
-    const data = await response.json();
+    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    const text = await response.text();
+    
+    // Handle empty response
+    if (!text) {
+      return { error: null };
+    }
+    
+    const data = JSON.parse(text);
     
     if (data.error) {
       return { error: data.error };
     }
     return { error: null };
   } catch (error) {
+    console.error('Save score error:', error);
     return { error: (error as Error).message };
   }
 }
@@ -98,14 +114,29 @@ export async function getLeaderboard(limitCount = 10) {
       limit: limitCount.toString(),
     });
     
-    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`);
-    const data = await response.json();
+    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    const text = await response.text();
+    
+    // Handle empty response
+    if (!text) {
+      return { scores: [], error: null };
+    }
+    
+    const data = JSON.parse(text);
     
     if (data.error) {
       return { scores: [], error: data.error };
     }
     return { scores: data.scores || [], error: null };
   } catch (error) {
+    console.error('Get leaderboard error:', error);
     return { scores: [], error: (error as Error).message };
   }
 }
