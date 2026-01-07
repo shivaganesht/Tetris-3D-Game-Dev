@@ -10,17 +10,6 @@ import {
   onAuthStateChanged,
   type User
 } from "firebase/auth";
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  collection, 
-  query, 
-  orderBy, 
-  limit, 
-  getDocs 
-} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBMgMzE713-yft0-l7HW0ppF4akI5azT0g",
@@ -32,12 +21,14 @@ const firebaseConfig = {
   measurementId: "G-EEH405DSVH"
 };
 
-// Initialize Firebase
+// Initialize Firebase (Auth only)
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
-const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+
+// Apps Script Web App URL - Replace with your deployed URL
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzS5u6U950wr-sI0TOoB5iAMASrxRZU3pYPgmBCGunYZSjuvxrZrVBcPn5HX3AAzQSd/exec';
 
 // Auth functions
 export async function signInWithGoogle() {
@@ -76,21 +67,23 @@ export async function logOut() {
   }
 }
 
-// Leaderboard functions
+// Leaderboard functions using Apps Script
 export async function saveHighScore(userId: string, displayName: string, score: number, level: number, lines: number) {
   try {
-    const userScoreRef = doc(db, "leaderboard", userId);
-    const existingDoc = await getDoc(userScoreRef);
+    const params = new URLSearchParams({
+      action: 'saveScore',
+      userId,
+      displayName: displayName || 'Anonymous',
+      score: score.toString(),
+      level: level.toString(),
+      lines: lines.toString(),
+    });
     
-    // Only update if new score is higher
-    if (!existingDoc.exists() || existingDoc.data().score < score) {
-      await setDoc(userScoreRef, {
-        displayName: displayName || "Anonymous",
-        score,
-        level,
-        lines,
-        timestamp: new Date().toISOString(),
-      });
+    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`);
+    const data = await response.json();
+    
+    if (data.error) {
+      return { error: data.error };
     }
     return { error: null };
   } catch (error) {
@@ -100,20 +93,21 @@ export async function saveHighScore(userId: string, displayName: string, score: 
 
 export async function getLeaderboard(limitCount = 10) {
   try {
-    const leaderboardRef = collection(db, "leaderboard");
-    const q = query(leaderboardRef, orderBy("score", "desc"), limit(limitCount));
-    const snapshot = await getDocs(q);
+    const params = new URLSearchParams({
+      action: 'getLeaderboard',
+      limit: limitCount.toString(),
+    });
     
-    const scores = snapshot.docs.map((doc, index) => ({
-      rank: index + 1,
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`);
+    const data = await response.json();
     
-    return { scores, error: null };
+    if (data.error) {
+      return { scores: [], error: data.error };
+    }
+    return { scores: data.scores || [], error: null };
   } catch (error) {
     return { scores: [], error: (error as Error).message };
   }
 }
 
-export { auth, db, analytics, onAuthStateChanged, type User };
+export { auth, analytics, onAuthStateChanged, type User };
